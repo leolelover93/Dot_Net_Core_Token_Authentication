@@ -11,10 +11,18 @@ namespace DotNet_Core_Token_Authentication.DataAccesLayer
         {
             var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             context.Database.EnsureCreated();
 
             if (!context.Users.Any())
             {
+                IdentityRole identityRole = new IdentityRole
+                {
+                    Name = "Admin"
+                };
+
+                roleManager.CreateAsync(identityRole);
+
                 ApplicationUser user = new ApplicationUser()
                 {
                     Email = "lefajele@gmail.com",
@@ -25,6 +33,9 @@ namespace DotNet_Core_Token_Authentication.DataAccesLayer
                     UserName = "lefajele"
                 };
                 userManager.CreateAsync(user, "Password@123*");
+
+                userManager.AddToRoleAsync(user, "Admin");
+                
             }
         }
     }
