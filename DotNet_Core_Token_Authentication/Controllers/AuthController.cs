@@ -20,6 +20,7 @@ namespace DotNet_Core_Token_Authentication.Controllers
         private UserManager<ApplicationUser> userManager;
         private RoleManager<string> roleManager;
         private readonly ApplicationDbContext _context;
+       
         public AuthController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
             this.userManager = userManager;
@@ -30,12 +31,21 @@ namespace DotNet_Core_Token_Authentication.Controllers
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            var user = await userManager.FindByNameAsync(model.UserName);
-             var Roles= await userManager.GetRolesAsync(user);
+            IList<string> Roles;
+            ApplicationUser user;
+            List<Claim> claims;
+
+
+            user = await userManager.FindByEmailAsync(model.UserName);
+            if (user == null)
+                return null;
+            else
+                Roles = await userManager.GetRolesAsync(user);
+
             if (user != null && await userManager.CheckPasswordAsync(user, model.Password))
             {
 
-                var claims = new List<Claim>();
+                claims = new List<Claim>();
                 claims.Add(new Claim(JwtRegisteredClaimNames.Sub, user.UserName));
                 claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
                 claims.Add(new Claim(JwtRegisteredClaimNames.GivenName, user.PhoneNumber));
